@@ -1,4 +1,4 @@
-# docker-django-drf-jwt_token-nginx-scrapy
+# docker-django-drf(jwt)-nginx-scrapy-cron
 Full Admin panel project: Docker, Django, Nginx, DRF(JWT), Scrapy, Cron.
 
 <h1>Install:</h1>

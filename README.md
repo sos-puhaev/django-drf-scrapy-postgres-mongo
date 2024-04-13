@@ -34,14 +34,14 @@ All information is also provided via the API; access via a JWT token is set; to 
 <h1>Screens</h1>
 <br>
 
-![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image1.png)
+![Image alt](https://github.com/sos-puhaev/django-drf-scrapy-postgres-mongo/blob/main/image1.png)
 
-![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image2.png)
+![Image alt](https://github.com/sos-puhaev/django-drf-scrapy-postgres-mongo/blob/main/image2.png)
 
-![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image3.png)
+![Image alt](https://github.com/sos-puhaev/django-drf-scrapy-postgres-mongo/blob/main/image3.png)
 
-![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image4.png)
+![Image alt](https://github.com/sos-puhaev/django-drf-scrapy-postgres-mongo/blob/main/image4.png)
 
-![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image5.png)
+![Image alt](https://github.com/sos-puhaev/django-drf-scrapy-postgres-mongo/blob/main/image5.png)
 
-![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image6.png)
+![Image alt](https://github.com/sos-puhaev/django-drf-scrapy-postgres-mongo/blob/main/image6.png)

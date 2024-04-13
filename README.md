@@ -39,3 +39,9 @@ All information is also provided via the API; access via a JWT token is set; to 
 ![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image2.png)
 
 ![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image3.png)
+
+![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image4.png)
+
+![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image5.png)
+
+![Image alt](https://github.com/sos-puhaev/docker-django-drf-nginx-scrapy/blob/main/image6.png)

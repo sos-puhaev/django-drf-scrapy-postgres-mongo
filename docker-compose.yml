@@ -1,0 +1,92 @@
+version: '3'
+
+services:
+
+  mongo:
+    image: mongo:4.4.6
+    container_name: mongo
+    restart: always
+    env_file: .env
+    command: ["mongod", "-f", "/etc/mongod.conf"]
+    environment:
+      - MONGO_INITDB_FEATURECOMPATIBILITYVERSION:"4.4"
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+      - MONGO_INITDB_USERNAME=${MONGO_DB_USERNAME}
+      - MONGO_INITDB_PASSWORD=${MONGO_DB_PASSWORD}
+    volumes:
+      - ${PWD}/_data/mongo:/data/db
+      - ${PWD}/docker/_mongo/fixtures:/import
+      - ${PWD}/docker/_mongo/scripts/init.sh:/docker-entrypoint-initdb.d/setup.sh
+      - ${PWD}/mongod.conf:/etc/mongod.conf
+    ports:
+      - 27017:27017
+
+  postgres:
+    container_name: postgres
+    image: postgres:12
+    restart: always
+    env_file: .env
+    environment:
+      - POSTGRES_DB=app_db
+      - POSTGRES_USER=app_db_user
+      - POSTGRES_PASSWORD=supersecretpassword
+      - POSTGRES_PORT=5432
+    ports:
+      - 5432:5432
+    volumes:
+      - ${PWD}/_data/postgres:/var/lib/postgresql/data
+      - ${PWD}/docker/_postgres/scripts/create_test_db.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+
+  scrapy:
+    build:
+      context: ./app/bls_scrapy
+    container_name: bls_scrapy
+    volumes:
+      - ./app/bls_scrapy:/app/bls_scrapy
+    depends_on:
+      - postgres
+      - mongo
+    command: ["tail", "-f", "/dev/null"]
+
+  app:
+    build: ./app
+    image: app:latest
+    container_name: app
+    restart: always
+    command: >
+        sh -c "python3 manage.py wait_for_db &&
+               python3 manage.py collectstatic --no-input &&
+               python3 manage.py runserver 0.0.0.0:8000"
+    env_file: .env
+    volumes:
+      - ${PWD}/app:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - django-static:/app/static
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+      - mongo
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - django-static:/app/static
+    depends_on:
+      - app
+
+  adminer:
+    image: adminer
+    restart: always  
+    ports:
+      - 8181:8080
+
+volumes:
+  django-static:
+
+networks:
+  default:

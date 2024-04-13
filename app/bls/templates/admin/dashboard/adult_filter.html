@@ -1,0 +1,256 @@
+{% extends 'admin/dashboard/base.html' %}
+{% block title %}Adult Filter{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-6">
+            <p><b>Adult Filter:</b></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-7" style="display: inline-flex;">
+            <div class="refresh_btn">
+                <button type="button" class="btn btn-primary ml-4" id="refreshButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"></path>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"></path>
+                    </svg>
+                    Refresh
+                  </button>
+            </div>
+            <div class="ml-5" style="width: 100%;">
+                <form id="searchAdultWord" method="get">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="q" placeholder="Search adult word" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class = "row">
+        <div class = col-7>
+            <div id="tableContainer">
+                <form id="sendAdult" method="post">
+                    {% csrf_token %}
+                    <table id="adultDataTable" class="table-striped table">
+                        <thead>
+                            <tr>
+                                <th>
+
+                                </th>
+                                <th>
+                                    <p>Term</p>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="list_tor">
+                            {% for item in adult_page.object_list %}
+                                <tr>
+                                    <td>
+                                        <input type="hidden" class="static-field" name="id" value="{{ item.0 }}">
+                                        <input type="checkbox" class="static-field" name="check" {% if item.1 == '1' %}checked{% endif %}>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="word" class="static-field" value="{{ item.2 }}" style="width: 100%;">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-danger delete-btn" data-id="{{ item.0 }}" data-word="{{ item.2 }}" data-check="{{ item.1 }}" style="padding: .01rem .36rem;">delete</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div id = "block-adult">
+                        <div id="block-btn" class="d-flex justify-content-end">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="green" id="saveAdultList" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16" style="display: none;">
+                                <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3"/>
+                            </svg>
+                            <button type="button" class="btn btn-outline-warning ml-4" id="addNewWord">Add new word</button>
+                            <button type="button" class="btn btn-success ml-4" id="sendSave">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="pagination-container" style="margin-top: 15px;">
+                <ul class="pagination">
+                    {% for num in adult_page.paginator.page_range %}
+                        <li class="page-item {% if num == adult_page.number %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    $('#refreshButton').click(function() {
+        location.reload();
+    });
+
+    var fieldCounter = 0;
+    $("#addNewWord").click(function() {
+        var newRow = $("<tr>");
+
+        var checkboxId = "dynamic_checkbox_" + fieldCounter;
+
+        var newCheckbox = $("<input>", {
+            type: "checkbox",
+            name: "dynamic_checkbox_" + fieldCounter,
+            "data-checkbox-id": checkboxId,
+            checked: true
+        });
+
+        var checkboxCell = $("<td>").addClass("dynamic-field").append(newCheckbox);
+        newRow.append(checkboxCell);
+
+        var newInput = $("<input>", {
+            type: "text",
+            name: "dynamic_text_" + fieldCounter,
+            style: "width: 100%;"
+        });
+
+        var inputCell = $("<td>").addClass("dynamic-field").append(newInput);
+        newRow.append(inputCell);
+
+        var newDeleteButton = $("<button>", {
+            type: "button",
+            class: "btn btn-outline-danger btn-new-delete",
+            style: "padding: .01rem .36rem;"
+        }).text("delete");
+
+        newRow.append($("<td>").append(newDeleteButton));
+
+        $(".list_tor").append(newRow);
+
+        fieldCounter++;
+
+        $(".list_tor").on("click", ".btn-new-delete", function() {
+            var checkboxId = $(this).closest("tr").find('input[type="checkbox"]').attr('data-checkbox-id');
+            $(this).closest("tr").remove();
+            console.log("Deleted checkbox with id:", checkboxId);
+        });
+    });
+    
+    $("#sendSave").click(function() {
+        var formData = {
+            dynamicFields: [],
+            staticFields: []
+        };
+        var saveAdultList = document.getElementById("saveAdultList");
+        
+        $('.dynamic-field input[type="text"]').each(function(index, element) {
+            var checkboxId = $(element).closest('tr').find('input[type="checkbox"]').attr('data-checkbox-id');
+            var checkboxValue = $(element).closest('tr').find('input[type="checkbox"]').prop('checked') ? '1' : '0';
+
+            formData.dynamicFields.push({
+                name: 'dynamic_field_' + index,
+                value: $(element).val(),
+                checkboxId: checkboxId,
+                checkboxValue: checkboxValue
+            });
+        });
+
+        $('.static-field').each(function(index, element) {
+            var inputType = $(element).attr('type');
+            var fieldName = $(element).attr('name');
+            var fieldValue = $(element).val();
+
+            if (inputType === 'checkbox') {
+                formData.staticFields.push({
+                    name: fieldName,
+                    value: $(element).prop('checked') ? '1' : '0'
+                });
+            } else {
+                formData.staticFields.push({
+                    name: fieldName,
+                    value: fieldValue
+                });
+            }
+        });
+
+        $.ajax({
+            type: "POST",
+            url: '{% url "adult_filter_page" %}',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(formData),
+            processData: false,
+            contentType: false,
+            headers: {'X-CSRFToken': getCookie('csrftoken')},
+            success: function(response) {
+                saveAdultList.style.display = "inline";
+                console.log("Data saved successfully:", response);
+            },
+            error: function(error) {
+                console.error("Error saving data:", error);
+            }
+        });
+    });
+
+    $(".delete-btn").click(function() {
+        var word = $(this).data("word");
+        var check = $(this).data("check");
+        var id = $(this).data("id")
+
+        var formData = {
+            action_type: 'delete',
+            word: word,
+            check: check,
+            id: id
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '{% url "adult_filter_page" %}',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(formData),
+            headers: {'X-CSRFToken': getCookie('csrftoken')},
+            success: function(response) {
+                alert("Press 'Ok' for delete");
+                var overlay = $("<div id='overlay'></div>");
+                overlay.css({
+                    'position': 'fixed',
+                    'top': 0,
+                    'left': 0,
+                    'width': '100%',
+                    'height': '100%',
+                    'background': 'rgba(0,0,0,0.7)',
+                    'z-index': 9999
+                });
+                $("body").append(overlay);
+
+                setTimeout(function() {
+                    alert("Deleting completed");
+                    overlay.remove();
+                    location.reload();
+                }, 1500);
+            },
+            error: function(error) {
+                console.error("Error deleting data:", error);
+            }
+        });
+    });
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+});
+</script>
+{% endblock %}

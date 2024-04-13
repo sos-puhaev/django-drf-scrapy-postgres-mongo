@@ -1,0 +1,206 @@
+{% extends 'admin/dashboard/base.html' %}
+
+{% block title %}Backup{% endblock %}
+{% block content %}
+
+<div>
+    <p><b>Backup setting:</b></p>
+</div>
+<div class = "container">
+    <div class = "row">
+        <div class = "col-4">
+            <form class="form-inline form-control">
+                <div class="setting-backup">
+                    <div class="form-group">
+                        <label for="timeInput">Time:</label>
+                        <input type="text" id="timeInput" class="form-control col-3" style="margin-left: 5px;">
+                        <span style="margin-left: 10px;">/ h</span>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <input type="checkbox" id = "timerCheck" class="form-check-input" style = "transform: scale(1.6); margin-left: 5px;">
+                        <label class="form-check-label" id = "timerCheckbox" for="timerCheckbox" style = "margin-left: 6px;">Timer Off</label>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <div class = "line-s col-6" style="border-color: rgba(52, 54, 68, 0.2); border-style: double;"></div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <input type="checkbox" id = "postgresCheck" class="form-check-input" style = "transform: scale(1.6); margin-left: 5px;">
+                        <label class="form-check-label" id = "postgresCheckbox" for="postgresCheckbox" style = "margin-left: 6px;">PostgresDB Off</label>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <input type="checkbox" id = "mongoCheck" class="form-check-input" style = "transform: scale(1.6); margin-left: 5px;">
+                        <label class="form-check-label" id = "mongoCheckbox" for="mongoCheckbox" style = "margin-left: 6px;">MongoDB Off</label>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <button type="button" class="btn btn-outline-dark" id="submitSave">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
+                                <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1z"/>
+                            </svg>
+                            Save settings
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class = "row">
+        <div class = "col-12">
+            <div class = "line" style="border-color: rgba(52, 54, 68, 0.2); border-style: double; margin-top: 20px;"></div>
+        </div>
+    </div>
+    <div class = "row">
+        <div class = "col-12">
+            <div style = "margin-top: 20px;">
+                <p><b>Backup MongoDB:</b></p>
+            </div>
+        </div>
+        <div class = "col-12">
+            <div class = "block-backup-one">
+                <form>
+                    <div>
+                        <button type="button" class="btn btn-outline-dark btn-lg" id="submitBackupMongo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-database-up" viewBox="0 0 16 16">
+                                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.354-5.854 1.5 1.5a.5.5 0 0 1-.708.708L13 11.707V14.5a.5.5 0 0 1-1 0v-2.793l-.646.647a.5.5 0 0 1-.708-.708l1.5-1.5a.5.5 0 0 1 .708 0Z"/>
+                                <path d="M12.096 6.223A4.92 4.92 0 0 0 13 5.698V7c0 .289-.213.654-.753 1.007a4.493 4.493 0 0 1 1.753.25V4c0-1.007-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1s-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4v9c0 1.007.875 1.755 1.904 2.223C4.978 15.71 6.427 16 8 16c.536 0 1.058-.034 1.555-.097a4.525 4.525 0 0 1-.813-.927C8.5 14.992 8.252 15 8 15c-1.464 0-2.766-.27-3.682-.687C3.356 13.875 3 13.373 3 13v-1.302c.271.202.58.378.904.525C4.978 12.71 6.427 13 8 13h.027a4.552 4.552 0 0 1 0-1H8c-1.464 0-2.766-.27-3.682-.687C3.356 10.875 3 10.373 3 10V8.698c.271.202.58.378.904.525C4.978 9.71 6.427 10 8 10c.262 0 .52-.008.774-.024a4.525 4.525 0 0 1 1.102-1.132C9.298 8.944 8.666 9 8 9c-1.464 0-2.766-.27-3.682-.687C3.356 7.875 3 7.373 3 7V5.698c.271.202.58.378.904.525C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777ZM3 4c0-.374.356-.875 1.318-1.313C5.234 2.271 6.536 2 8 2s2.766.27 3.682.687C12.644 3.125 13 3.627 13 4c0 .374-.356.875-1.318 1.313C10.766 5.729 9.464 6 8 6s-2.766-.27-3.682-.687C3.356 4.875 3 4.373 3 4Z"/>
+                            </svg>
+                            Make a backup of MongoDB
+                        </button>
+                    </div>
+                    <div>
+                        <p id = "result-success-mg" style = "color: green; font-size: 20px; border-style: double; text-align: center; display: none; padding: 5px;"></p>
+                        <p id = "result-error-mg" style = "color: red; font-size: 20px; border-style: double; text-align: center; display: none; padding: 5px;"></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class = "row">
+        <div class = "col-12">
+            <div class = "line" style="border-color: rgba(52, 54, 68, 0.2); border-style: double; margin-top: 20px;"></div>
+        </div>
+    </div>
+    <div class = "row">
+        <div class = "col-12">
+            <div style = "margin-top: 20px;">
+                <p><b>Backup PostgresDB:</b></p>
+            </div>
+        </div>
+        <div class = "col-12">
+            <div class = "block-backup-one">
+                <form>
+                    <div>
+                        <button type="button" class="btn btn-outline-dark btn-lg" id="submitBackupPostgres">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-database-up" viewBox="0 0 16 16">
+                                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.354-5.854 1.5 1.5a.5.5 0 0 1-.708.708L13 11.707V14.5a.5.5 0 0 1-1 0v-2.793l-.646.647a.5.5 0 0 1-.708-.708l1.5-1.5a.5.5 0 0 1 .708 0Z"/>
+                                <path d="M12.096 6.223A4.92 4.92 0 0 0 13 5.698V7c0 .289-.213.654-.753 1.007a4.493 4.493 0 0 1 1.753.25V4c0-1.007-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1s-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4v9c0 1.007.875 1.755 1.904 2.223C4.978 15.71 6.427 16 8 16c.536 0 1.058-.034 1.555-.097a4.525 4.525 0 0 1-.813-.927C8.5 14.992 8.252 15 8 15c-1.464 0-2.766-.27-3.682-.687C3.356 13.875 3 13.373 3 13v-1.302c.271.202.58.378.904.525C4.978 12.71 6.427 13 8 13h.027a4.552 4.552 0 0 1 0-1H8c-1.464 0-2.766-.27-3.682-.687C3.356 10.875 3 10.373 3 10V8.698c.271.202.58.378.904.525C4.978 9.71 6.427 10 8 10c.262 0 .52-.008.774-.024a4.525 4.525 0 0 1 1.102-1.132C9.298 8.944 8.666 9 8 9c-1.464 0-2.766-.27-3.682-.687C3.356 7.875 3 7.373 3 7V5.698c.271.202.58.378.904.525C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777ZM3 4c0-.374.356-.875 1.318-1.313C5.234 2.271 6.536 2 8 2s2.766.27 3.682.687C12.644 3.125 13 3.627 13 4c0 .374-.356.875-1.318 1.313C10.766 5.729 9.464 6 8 6s-2.766-.27-3.682-.687C3.356 4.875 3 4.373 3 4Z"/>
+                            </svg>
+                            Make a backup of PostgresDB
+                        </button>
+                    </div>
+                    <div>
+                        <p id = "result-success-ps" style = "color: green; font-size: 20px; border-style: double; text-align: center; display: none; padding: 5px;"></p>
+                        <p id = "result-error-ps" style = "color: red; font-size: 20px; border-style: double; text-align: center; display: none; padding: 5px;"></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    var timerWorking = "";
+    var postgres_status = "";
+    var mongo_status = ""
+    
+    if (timerWorking == 1){
+        $('#timerCheck').prop('checked', true);
+        $('#timerCheckbox').text("Timer On");
+    } else {
+        $('#timerCheck').prop('checked', false);
+        $('#timerCheckbox').text("Timer Off");
+    }
+    if (postgres_status == 1){
+        $('#postgresCheck').prop('checked', true);
+        $('#postgresCheckbox').text("PostgresDB On");
+    } else {
+        $('#postgresCheck').prop('checked', false);
+        $('#postgresCheckbox').text("PostgresDB Off");
+    }
+    if (mongo_status == 1){
+        $('#mongoCheck').prop('checked', true);
+        $('#mongoCheckbox').text("MongoDB On");
+    } else {
+        $('#mongoCheck').prop('checked', false);
+        $('#mongoCheckbox').text("MongoDB Off");
+    }
+    
+    $('#timerCheck').click(function(){
+        if ($('#timerCheck').prop('checked')){
+            $('#timerCheckbox').text("Timer On");
+            timerWorking = 1
+        } else {
+            $('#timerCheckbox').text("Timer Off");
+            timerWorking = 0
+        }
+    });
+    $('#postgresCheck').click(function(){
+        if ($('#postgresCheck').prop('checked')){
+            $('#postgresCheckbox').text("PostgresDB On");
+            postgres_status = 1
+        } else {
+            $('#postgresCheckbox').text("PostgresDB Off");
+            postgres_status = 0
+        }
+    });
+    $('#mongoCheck').click(function(){
+        if ($('#mongoCheck').prop('checked')){
+            $('#mongoCheckbox').text("MongoDB On");
+            mongo_status = 1
+        } else {
+            $('#mongoCheckbox').text("MongoDB Off");
+            mongo_status = 0
+        }
+    });
+
+    // Send settings backup
+    $('#submitSave').click(function(){
+        var arrField = {
+            'form': 'form1',
+            'timeInput': $('#timeInput').val(),
+            'timer': timerWorking,
+            'postgres_status': postgres_status,
+            'mongo_status': mongo_status
+        };
+        
+        $.ajax({
+            url: '{% url "backup_page" %}',
+            method: 'POST',
+            data: arrField,
+            headers: {'X-CSRFToken': getCookie('csrftoken')},
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.error(error);
+            }
+        });
+    });
+    
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+});
+</script>
+{% endblock %}

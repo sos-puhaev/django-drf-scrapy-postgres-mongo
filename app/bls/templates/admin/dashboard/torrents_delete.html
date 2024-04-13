@@ -1,0 +1,186 @@
+{% extends 'admin/dashboard/base.html' %}
+
+{% block title %}Remove Torrent{% endblock %}
+{% block content %}
+
+<div>
+    <b><p>DMCA Removing:</p></b>
+</div>
+<div class="container mt-5">
+    <div class = "row">
+        <div class = "col-12">
+            <form>
+                <div class="mb-3">
+                    <textarea class="form-control" id="linksTextarea" rows="8" placeholder="Fill links to remove (separated by rows)"></textarea>
+                </div>
+                <button type="button" class="btn btn-outline-danger" id="submitListDelete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path>
+                    </svg>
+                    Delete list
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class = "row">
+        <div class = "col-12">
+            <div class = "line" style="border-color: rgba(52, 54, 68, 0.2); border-style: double; margin-top: 20px;"></div>
+        </div>
+    </div>
+</div>
+<div style = "margin-top: 20px;">
+    <b><p>Torrent removing: </p></b>
+</div>
+<div class = "container mt-5">
+    <div class = "row">
+        <div class = "col-12">
+            <form class = "form-control" style = "display: inline-flex;">
+                <div id = "tdlistBlock" style = "display: inline-flex;">
+                    <div id = "tdBlockOne" style = "padding: 20px;">
+                        <div style = "padding: 10px;">
+                            <label for="date">Date from:</label>
+                            <input type="date" class="form-control" id="date-from" name="date-from" required>
+                        </div>
+                        <div style = "padding: 10px;">
+                            <label for="date">Date until:</label>
+                            <input type="date" class="form-control" id="date-until" name="date-until" required>
+                        </div>
+                    </div>
+                    <div id = "tdblockTwo" style = "padding: 20px; margin-left: 10%;">
+                        <div style = "padding: 10px;">
+                            <label for="date">Seeds from:</label>
+                            <input type="text" class="col-5 form-control form-control-sm" id="seeds-from" name="seeds-from" required>
+                        </div>
+                        <div style = "padding: 10px;">
+                            <label for="date">Seeds until:</label>
+                            <input type="text" class="col-5 form-control form-control-sm" id="seeds-until" name="seeds-until" required>
+                        </div>
+                    </div>
+                    <div id = "tdblockThree" style = "padding: 20px;">
+                        <div style = "padding: 10px;">
+                            <label for="date">Peers from:</label>
+                            <input type="text" class="col-5 form-control form-control-sm" id="peers-from" name="peers-from" required>
+                        </div>
+                        <div style = "padding: 10px;">
+                            <label for="date">Peers until:</label>
+                            <input type="text" class="col-5 form-control form-control-sm" id="peers-until" name="peers-until" required>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-outline-danger" id="submitTorrentDelete" style = "margin-top: 40px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path>
+                        </svg>
+                        Delete range torrents
+                    </button>
+                    <div class = "Result" style = "margin-top: 15px;">
+                        <p id = "result-success" style = "color: green; font-size: 20px; border-style: double; text-align: center; display: none; padding: 5px;"></p><p id = "result-error" style = "color: red; font-size: 20px; border-style: double; text-align: center; display: none; padding: 5px;">Error: </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        $('#submitListDelete').click(function(){
+            var form1 = 'form1';
+            var linksText = $('#linksTextarea').val();
+            var linksArray = linksText.split('\n');
+            console.log(linksArray);
+            if (linksText.length === 0){
+                alert("The list is empty")
+            } else {
+                $.ajax({
+                    url: '{% url "torrent_delete_page" %}',
+                    method: 'POST',
+                    data: { links: linksArray, form1: form1 },
+                    headers: {'X-CSRFToken': getCookie('csrftoken')},
+                    success: function(response) {
+                        alert(response.message);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+
+        $('#submitTorrentDelete').click(function(){
+            var form2 = 'form2';
+            var dateFrom = $('#date-from').val();
+            var dateUntil = $('#date-until').val();
+            var seedsFrom = $('#seeds-from').val();
+            var seedsUntil = $('#seeds-until').val();
+            var peersFrom = $('#peers-from').val();
+            var peersUntil = $('#peers-until').val();
+
+            if (dateFrom == '' || dateUntil == '') {
+                alert("Please change date !");
+            } else {
+                if (seedsFrom > seedsUntil){
+                    alert("Errors. Change Seeds");
+                    throw new Error("Seeds range error");
+                }
+                if (peersFrom > peersUntil){
+                    alert("Errors. Change Peers");
+                    throw new Error("Peers range error");
+                }
+                $.ajax({
+                    url: '{% url "torrent_delete_page" %}',
+                    method: 'POST',
+                    data:   { 
+                                dateFrom: dateFrom,
+                                dateUntil: dateUntil,
+                                seedsFrom: seedsFrom,
+                                seedsUntil: seedsUntil,
+                                peersFrom: peersFrom,
+                                peersUntil: peersUntil,
+                                form2: form2
+                            },
+                    headers: {'X-CSRFToken': getCookie('csrftoken')},
+                    success: function(response) {
+                        console.log(response);
+                        if (response.success){
+                            var deletedCount = response.deleted_count;
+                            ok = document.getElementById("result-success");
+                            ok.style.display = 'inline';
+                            ok.innerText = 'Deleted ' + deletedCount + ' torrents';
+                        }
+                        if (response.error){
+                            var e = response.data_error;
+                            err = document.getElementById("result-error");
+                            err.style.display = 'inline';
+                            err.innerText = e;
+                        }
+
+                    },
+                    error: function(error) {
+                        err = document.getElementById("result-error");
+                        err.style.display = 'inline';
+                        console.error(error);
+                    }
+                });
+            }
+        })
+    });
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

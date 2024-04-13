@@ -1,0 +1,306 @@
+{% extends 'admin/dashboard/base.html' %}
+{% block title %}Torrents List{% endblock %}
+
+{% block content %}
+  <h3>Torrents List</h3>
+
+<div class="d-flex">
+    <div class="">
+        <form class="form-inline" id="itemsPerPageForm" method="get">
+            <label class="mr-2" for="items_per_page">Show</label>
+            <select class="form-control" id="items_per_page" name="items_per_page">
+                <option value="10" {% if items_per_page == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if items_per_page == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if items_per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if items_per_page == 100 %}selected{% endif %}>100</option>
+            </select>
+            <label class="ml-2" for="items_per_page">entries</label>
+        </form>
+    </div>
+    <div class="">
+        <button type="button" class="btn btn-primary ml-4" id="refreshButton">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"></path>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"></path>
+            </svg>
+            Refresh
+          </button>
+    </div>
+    <div class="ml-4">
+        <form id="searchForm" method="get">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name="q" placeholder="Search title" required>
+                <div class="input-group-append">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="button-delete-list">
+        <button type="button" class="btn btn-outline-danger" id="submitDelete">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path>
+                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path>
+            </svg>
+            Delete
+          </button>
+    </div>
+</div>
+
+<div id="torrentDataContainer">
+    <table id="torrentDataTable" class="table-striped table">
+        <thead>
+            <tr>
+                <th>
+                    <!-- <div class="title-table">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-square" viewBox="0 0 16 16" style="margin-bottom: 12px;">
+                            <path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5H3z"/>
+                            <path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/>
+                          </svg>
+                    </div> -->
+                </th>
+                <th>
+                    <div class="title-table">
+                        <p style="font-size: 15px;">Title</p>
+                        <a href="#" class="ml-2 sort-link" id="sort-abc" data-order="asc">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-sort-alpha-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10.082 5.629 9.664 7H8.598l1.789-5.332h1.234L13.402 7h-1.12l-.419-1.371h-1.781zm1.57-.785L11 2.687h-.047l-.652 2.157h1.351z"/>
+                                <path d="M12.96 14H9.028v-.691l2.579-3.72v-.054H9.098v-.867h3.785v.691l-2.567 3.72v.054h2.645V14zM4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </th>
+                <th>
+                    <div class="title-table">
+                        <p style="font-size: 15px;">Seeds</p>
+                        <a href="#" class="ml-2 sort-link" id="sort-seeds" data-order="up">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-sort-numeric-down-alt" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M11.36 7.098c-1.137 0-1.708-.657-1.762-1.278h1.004c.058.223.343.45.773.45.824 0 1.164-.829 1.133-1.856h-.059c-.148.39-.57.742-1.261.742-.91 0-1.72-.613-1.72-1.758 0-1.148.848-1.836 1.973-1.836 1.09 0 2.063.637 2.063 2.688 0 1.867-.723 2.848-2.145 2.848zm.062-2.735c.504 0 .933-.336.933-.972 0-.633-.398-1.008-.94-1.008-.52 0-.927.375-.927 1 0 .64.418.98.934.98z"/>
+                                <path d="M12.438 8.668V14H11.39V9.684h-.051l-1.211.859v-.969l1.262-.906h1.046zM4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </th>
+                <th>
+                    <div class="title-table">
+                        <p style="font-size: 15px;">Peers</p>
+                        <a href="#" class="ml-2 sort-link" id="sort-peers" data-order="up">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-sort-numeric-down-alt" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M11.36 7.098c-1.137 0-1.708-.657-1.762-1.278h1.004c.058.223.343.45.773.45.824 0 1.164-.829 1.133-1.856h-.059c-.148.39-.57.742-1.261.742-.91 0-1.72-.613-1.72-1.758 0-1.148.848-1.836 1.973-1.836 1.09 0 2.063.637 2.063 2.688 0 1.867-.723 2.848-2.145 2.848zm.062-2.735c.504 0 .933-.336.933-.972 0-.633-.398-1.008-.94-1.008-.52 0-.927.375-.927 1 0 .64.418.98.934.98z"/>
+                                <path d="M12.438 8.668V14H11.39V9.684h-.051l-1.211.859v-.969l1.262-.906h1.046zM4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </th>
+                <th>
+                    <div class="title-table">
+                        <p style="font-size: 15px;">Adult</p>
+                        <a href="#" class="ml-2 sort-link" id="sort-adult" data-order="up">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-sort-numeric-down-alt" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M11.36 7.098c-1.137 0-1.708-.657-1.762-1.278h1.004c.058.223.343.45.773.45.824 0 1.164-.829 1.133-1.856h-.059c-.148.39-.57.742-1.261.742-.91 0-1.72-.613-1.72-1.758 0-1.148.848-1.836 1.973-1.836 1.09 0 2.063.637 2.063 2.688 0 1.867-.723 2.848-2.145 2.848zm.062-2.735c.504 0 .933-.336.933-.972 0-.633-.398-1.008-.94-1.008-.52 0-.927.375-.927 1 0 .64.418.98.934.98z"/>
+                                <path d="M12.438 8.668V14H11.39V9.684h-.051l-1.211.859v-.969l1.262-.906h1.046zM4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="list_tor">
+            
+        </tbody>
+    </table>
+</div>
+    
+<div id="pagination-container">  
+</div>
+
+<script>
+    $(document).ready(function() {
+    var currentItemsPerPage = 10;
+    var currentPage = 1;
+    var currentSortOrder = 'def';
+    var currentSortSeeds = 'def';
+    var currentSortPeers = 'def';
+    var currentSortAdult = 'def';
+
+    loadData();
+    
+    $('#submitDelete').click(function() {
+        var selectedMagnet = [];
+        var flag = 'delete'
+
+        $('.torrent-checkbox:checked').each(function() {
+            var row = $(this).closest('tr');
+            var magnet = row.find('td:eq(5)').text();
+            selectedMagnet.push(magnet);
+        });
+        console.log('Selected Magnet:', selectedMagnet);
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_torrent_page" %}',
+            data: {
+                flag: flag,
+                magnets: selectedMagnet,
+            },
+            success: function(response) {
+                if (selectedMagnet == ''){
+                    alert('No torrents selected')
+                } else {
+                    loadData()
+                    alert('Torrents successfully deleted')
+                }
+            },
+            error: function(error) {
+                console.error('Error', error);
+            }
+        });   
+    });
+
+    $('#refreshButton').click(function() {
+        location.reload();
+    });
+
+    $('#searchForm').submit(function (event) {
+        event.preventDefault();
+        
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_torrent_page" %}',
+            data: $(this).serialize(),
+            success: function (data) {
+                $('#torrentDataTable tbody').empty();
+                data.torrents_page.forEach(function(torrent) {
+                    var checkbox = $('<input>').attr('type', 'checkbox').attr('class', 'torrent-checkbox');
+                    var row = $('<tr>');
+                    row.append($('<td>').append(checkbox));
+                    row.append($('<td>').text(torrent.title));
+                    row.append($('<td>').text(torrent.seeds));
+                    row.append($('<td>').text(torrent.peers));
+                    row.append($('<td>').text(torrent.adult));
+                    row.append($('<td>').text(torrent.magnet).addClass('hidden-magnet'));
+                    $('#torrentDataTable tbody').append(row);
+                });
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+
+    $('#items_per_page').change(function() {
+        currentItemsPerPage = parseInt($(this).val(), 10);
+        loadData();
+    });
+
+    $('#sort-abc').click(function() {
+        currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
+        currentSortSeeds = 'def';
+        currentSortPeers = 'def';
+        currentSortAdult = 'def';
+        loadData();
+    });
+
+    $('#sort-seeds').click(function() {
+        currentSortSeeds = (currentSortSeeds === 'up') ? 'down' : 'up';
+        currentSortOrder = 'def';
+        currentSortPeers = 'def';
+        currentSortAdult = 'def';
+        loadData();
+    });
+
+    $('#sort-peers').click(function() {
+        currentSortPeers = (currentSortPeers === 'up') ? 'down' : 'up';
+        currentSortOrder = 'def';
+        currentSortSeeds = 'def';
+        currentSortAdult = 'def';
+        loadData();
+    });
+
+    $('#sort-adult').click(function() {
+        currentSortAdult = (currentSortAdult === 'up') ? 'down' : 'up';
+        currentSortOrder = 'def';
+        currentSortPeers = 'def';
+        currentSortSeeds = 'def';
+        loadData();
+    });
+
+    function loadData() {
+
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_torrent_page" %}',
+            data: {
+                items_per_page: currentItemsPerPage,
+                page: currentPage,
+                sort_order: currentSortOrder,
+                sort_seeds: currentSortSeeds,
+                sort_peers: currentSortPeers,
+                sort_adult: currentSortAdult
+            },
+            success: function(data) {
+                $('#torrentDataTable tbody').empty();
+                data.torrents_page.forEach(function(torrent) {
+                    var checkbox = $('<input>').attr('type', 'checkbox').attr('class', 'torrent-checkbox');
+                    var row = $('<tr>');
+                    row.append($('<td>').append(checkbox));
+                    row.append($('<td>').text(torrent.title));
+                    row.append($('<td>').text(torrent.seeds));
+                    row.append($('<td>').text(torrent.peers));
+                    row.append($('<td>').text(torrent.adult));
+                    row.append($('<td>').text(torrent.magnet).addClass('hidden-magnet'));
+                    $('#torrentDataTable tbody').append(row);
+                });
+
+
+                $('#pagination-container').twbsPagination({
+                    totalPages: data.total_pages,
+                    visiblePages: 5,
+                    onPageClick: function (event, page) {
+                        console.log('Switching to page:', page);
+                        currentPage = page;
+                        paginationPage(currentPage, currentItemsPerPage);
+                    }
+                });
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function paginationPage(page, itemsPerPage) {
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_torrent_page" %}',
+            data: {
+                page: page,
+                items_per_page: itemsPerPage,
+                sort_order: currentSortOrder,
+                sort_seeds: currentSortSeeds,
+                sort_peers: currentSortPeers,
+                sort_adult: currentSortAdult
+            },
+            success: function(data) {
+                $('#torrentDataTable tbody').empty();
+                console.log('Torrent: ', data)
+                data.torrents_page.forEach(function(torrent) {
+                    var checkbox = $('<input>').attr('type', 'checkbox').attr('class', 'torrent-checkbox');
+                    var row = $('<tr>');
+                    row.append($('<td>').append(checkbox));
+                    row.append($('<td>').text(torrent.title));
+                    row.append($('<td>').text(torrent.seeds));
+                    row.append($('<td>').text(torrent.peers));
+                    row.append($('<td>').text(torrent.adult));
+                    row.append($('<td>').text(torrent.magnet).addClass('hidden-magnet'));
+                    $('#torrentDataTable tbody').append(row);
+                });
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

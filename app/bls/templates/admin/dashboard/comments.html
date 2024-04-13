@@ -1,0 +1,236 @@
+{% extends 'admin/dashboard/base.html' %}
+{% block title %}Comments{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="">
+            <button type="button" class="btn btn-primary ml-4" id="refreshButtonComment">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"></path>
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"></path>
+                </svg>
+                Refresh
+              </button>
+        </div>
+        <div class="ml-4">
+            <form id="searchFormComment" method="get">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="q" placeholder="Search title" required>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-12">
+            <div class="bg-light text-black p-4">
+                <table class="table-striped table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Adult</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-12">
+            <div id="pagination-container">
+            </div>
+        </div>
+
+        <div class="col-12  border-right"></div>
+
+        <div class="col-12">
+            <div class="bg-light text-black p-4">
+                <p>Comments:</p>
+                <div class="blocks-comment" id="block_comment">
+
+                </div>
+            </div>
+        </div>
+        <div class="button-delete-list">
+            <button type="button" class="btn btn-outline-danger" id="submitDeleteComment">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path>
+                </svg>
+                Delete comment(s)
+              </button>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    var currentItemsPerPage = 10;
+    var currentPage = 1;
+    var itemIdSelected = 0
+
+    $('#refreshButtonComment').click(function() {
+        location.reload();
+    });
+
+    $('#searchFormComment').submit(function (event) {
+        event.preventDefault();
+        
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_comments_page" %}',
+            data: $(this).serialize(),
+            success: function (data) {
+                loadTableData(data.comment_page)
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+
+    function loadTableData(data) {
+        var tableBody = $('#tableBody');
+        tableBody.empty();
+
+        data.forEach(function(item) {
+            var row = $('<tr>');
+            //row.append('<td>' + item._id + '</td>');
+            row.append('<td class="selected_torrent" data-id="' + item._id + '">' + item.title + '</td>');
+            row.append('<td>' + item.adult + '</td>');
+            tableBody.append(row);
+        });
+
+        $('.selected_torrent').click(function() {
+            var itemId = $(this).data('id');
+            itemIdSelected = itemId;
+            sendAjaxRequest(itemId);
+        });
+    }
+
+    $('#submitDeleteComment').click(function() {
+        var selectedComment = [];
+        var flag = 'delete'
+
+        $('.comment-checkbox:checked').each(function() {
+            var row = $(this).closest('.row');
+            var id_comment = row.find('.hidden-comment-id p').text();
+            selectedComment.push(id_comment);
+        });
+        console.log('Selected Comment:', selectedComment);
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_comments_page" %}',
+            data: {
+                flag: flag,
+                id_comments: selectedComment,
+            },
+            success: function(response) {
+                if (selectedComment == ''){
+                    alert('No comment(s) selected');
+                } else {
+                    alert('Comment(s) successfully deleted');
+                    sendAjaxRequest(itemIdSelected);
+                    itemIdSelected = 0;
+                }
+            },
+            error: function(error) {
+                console.error('Error', error);
+            }
+        });   
+    });
+
+    function sendAjaxRequest(itemId) {
+        var block_comment = $('#block_comment');
+        block_comment.empty()
+
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_comments_page" %}',
+            data: { itemId: itemId, ajax_type: "get_comment" },
+            success: function (data) {
+                $.each(data.comment_page, function (index, item) {
+                    var checkbox = $('<input>').attr('type', 'checkbox').attr('class', 'comment-checkbox');
+                    var row = $('<div>').addClass('row').addClass('block_info_comment');
+                    row.append($('<div>').addClass('checkbox_comment').append(checkbox));
+                    row.append($('<div>').addClass('col-1 hidden-magnet hidden-comment-id').append($('<p>').text(item.id)));
+                    row.append($('<div>').addClass('col-4')
+                        .append('<p class = "name_comment">' + item.name + '</p>')
+                        .append('<p class = "email_comment">' + item.email + '</p>')
+                        .append('<p class = "date_comment">' + formatTimestamp(item.data_comment) + '</p>'));
+                    row.append($('<div>').addClass('col-7').append('<p>' + item.comments + '</p>'));
+
+                    block_comment.append(row);
+                });
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function formatTimestamp(timestamp) {
+        var date = new Date(timestamp * 1000);
+
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+
+        day = day < 10 ? '0' + day : day;
+        month = month < 10 ? '0' + month : month;
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+
+        var formattedDateTime = day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
+
+        return formattedDateTime;
+    }
+
+    $.ajax({
+        type: 'GET',
+        url: '{% url "list_comments_page" %}',
+        data: {
+            items_per_page: currentItemsPerPage,
+            page: currentPage,
+        },
+        success: function(data) {
+            loadTableData(data.comment_page);
+
+            $('#pagination-container').twbsPagination({
+                totalPages: data.total_pages,
+                visiblePages: 5,
+                onPageClick: function (event, page) {
+                    currentPage = page;
+                    paginationPage(currentPage, currentItemsPerPage);
+                }
+            });
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    });
+
+    function paginationPage(page, itemsPerPage) {
+        $.ajax({
+            type: 'GET',
+            url: '{% url "list_comments_page" %}',
+            data: {
+                page: page,
+                items_per_page: itemsPerPage,
+            },
+            success: function(data) {
+                loadTableData(data.comment_page);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+});
+
+</script>
+{% endblock %}

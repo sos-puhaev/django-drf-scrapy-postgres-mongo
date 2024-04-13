@@ -1,0 +1,191 @@
+{% extends 'admin/dashboard/base.html' %}
+
+{% block title %}EZTV settings{% endblock %}
+{% block content %}
+<div class = "container-fluid">
+    <div>
+        <b><p>EZTV scrapper settings:</p></b>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <form class="form-inline" id="eztvFormSetting" method="get">
+                <div class="blockSave1">
+                    <div class="secondBlock1" style="display: inline-flex;">
+                        <div class="form-group mb-1">
+                            <label for="limitPage">Limit:</label>
+                            <div class="ml-2">
+                                <input type="text" class="form-control" id="limit" value="{{ eztv_page.1 }}" style="width: 50px;">
+                            </div>
+                        </div>
+                        <div class="form-group mb-1 ml-2">
+                            <label for="offsetPage">Offset:</label>
+                            <div class="ml-2">
+                                <input type="text" class="form-control" id="offset" value="{{ eztv_page.2 }}" style="width: 50px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="secondBlock2">
+                        <div class="form-group mb-1">
+                            <label for="urlParse">Parse url:</label>
+                            <div class="ml-2">
+                                <input type="url" class="form-control" id="urlParse" value="{{ eztv_page.3 }}">
+                            </div>
+                        </div>
+                
+                        <div class="form-group mb-1">
+                            <label for="allowedParse">Allowed url:</label>
+                            <div class="ml-2">
+                                <input type="url" class="form-control" id="allowedParse" value="{{ eztv_page.4 }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="blockSave2" style="padding-left: 50px;">
+                    <div class="secondBlock3">
+                        <div class="custom-control custom-switch mb-2" style="display: inline-flex;">
+                            <input type="checkbox" class="custom-control-input" id="customSwitch">
+                            <label class="custom-control-label" for="customSwitch" id="switchLabel">Timer Off</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="startUrlParse">Time:</label>
+                            <div class="ml-2">
+                                <input type="text" class="form-control" id="timer" value="{{ eztv_page.5 }}">
+                            </div>
+                            <label class="ml-2" for="startUrlParse">/ hours.</label>
+                        </div>
+                    </div>
+                    <div class="secondBlock4 mt-3" style="display: inline-flex;">
+                        <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save settings</button>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="green" id="successSave" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16" style="display: none;">
+                            <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3"/>
+                        </svg>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" id="waitSave" class="bi bi-bookmark" viewBox="0 0 16 16" style="display: none;">
+                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                        </svg>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="line_eztv" style="border-color: rgba(9, 75, 255, 0.93); border-style: dotted; margin-top: 15px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="block-start-scrapper" style="margin-top: 30px;">
+                <b><p>Scrapy starting:</p></b>
+                <div id="tpb_status" style="display: inline-flex;">
+                    <div>
+                        <button type="button" class="btn btn-outline-primary" id="submitStartScrapy">Start scrapy</button>
+                    </div>
+                    <div id="progress_bar">
+                        <p style="color: green;">Scrapy eztv starting . . .</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="line_eztv_row_two" style="border-color: rgba(9, 75, 255, 0.93); border-style: dotted; margin-top: 30px;"></div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        var timerWorking = "{{ eztv_page.7 }}";
+        var eztv_status = "{{ eztv_status }}";
+    
+        if (timerWorking == 1){
+            $('#customSwitch').prop('checked', true);
+            $('#switchLabel').text("Timer On");
+        } else {
+            $('#customSwitch').prop('checked', false);
+            $('#switchLabel').text("Timer Off");
+        }
+    
+        $('#customSwitch').click(function(){
+            if ($('#customSwitch').prop('checked')){
+                $('#switchLabel').text("Timer On");
+                timerWorking = 1
+            } else {
+                $('#switchLabel').text("Timer Off");
+                timerWorking = 0
+            }
+        })
+    
+        $('#saveSettingsBtn').click(function(){
+            var settingSave = {
+                limitPage: $('#limit').val(),
+                offsetPage: $('#offset').val(),
+                allowedParse: $('#allowedParse').val(),
+                urlParse: $('#urlParse').val(),
+                timer: $('#timer').val(),
+                timer_working: timerWorking
+            }
+    
+            var svgSave = document.getElementById("successSave");
+            var svgWait = document.getElementById("waitSave");
+    
+            svgWait.style.display = "inline";
+            svgSave.style.display = "none";
+    
+            $.ajax({
+                type: 'GET',
+                url: '{% url "eztv_page" %}',
+                data: settingSave,
+                success: function(response){
+                    setTimeout(function() {
+                        svgWait.style.display = "none";
+                        svgSave.style.display = "inline";
+                    }, 1000);
+                },
+                error: function(error){
+                    console.error('Error:', error);
+                }
+            })
+        })
+    
+        $('#submitStartScrapy').click(function(){
+            var flag = 'start';
+            var progress_bar = document.getElementById("progress_bar");
+            var btn = document.getElementById("submitStartScrapy");
+    
+            btn.style.display = "none";
+            progress_bar.style.display = "inline";
+    
+            $.ajax({
+                type: 'GET',
+                url: '{% url "eztv_page" %}',
+                data: {flag: flag},
+                success: function(response){
+                    btn.style.display = "inline";
+                    progress_bar.style.display = "none";
+                    alert('Scrapy success ...');
+                },
+                error: function(error){
+                    btn.style.display = "inline";
+                    progress_bar.style.display = "none";
+                    console.error('Error:', error);
+                }
+            })
+        })
+    
+        if (eztv_status == 0){
+            var progress_bar = document.getElementById("progress_bar");
+            progress_bar.style.display = "none";
+        }
+        if (eztv_status == 1){
+            var progress_bar = document.getElementById("progress_bar");
+            var btn = document.getElementById("submitStartScrapy");
+    
+            btn.style.display = "none";
+            progress_bar.style.display = "inline";
+        }
+    })
+</script>
+{% endblock %}

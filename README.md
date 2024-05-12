@@ -39,17 +39,17 @@ Scrapy settings:
 			+ When you click on start, the parser will start.
 
 Endpoints:
-	* http://127.0.0.1/admindjango/ - Superuser admin panel.
-	* http://127.0.0.1/admin/ - Admin control panel BLS.
-	* http://127.0.0.1/admin/list - List torrents
-	* http://127.0.0.1/admin/torr_delete - Torrents delete
-	* http://127.0.0.1/admin/list_comments - List comments and delete comments
-	* http://127.0.0.1/admin/adult_filter - Adult filter
-	* http://127.0.0.1/admin/tpb - TPB scrapy settings
-	* http://127.0.0.1/admin/backup - Backup Mongo and Postgres
-	* http://127.0.0.1/trackers/ - Trackers list XML
-	* http://127.0.0.1/admin/eztv - EZTV scrapy settings
-	* http://127.0.0.1/admin/yts - YTS scrapy settings
+	* http://127.0.0.1/admindjango/ - Superuser admin panel.<br>
+	* http://127.0.0.1/admin/ - Admin control panel BLS.<br>
+	* http://127.0.0.1/admin/list - List torrents<br>
+	* http://127.0.0.1/admin/torr_delete - Torrents delete<br>
+	* http://127.0.0.1/admin/list_comments - List comments and delete comments<br>
+	* http://127.0.0.1/admin/adult_filter - Adult filter<br>
+	* http://127.0.0.1/admin/tpb - TPB scrapy settings<br>
+	* http://127.0.0.1/admin/backup - Backup Mongo and Postgres<br>
+	* http://127.0.0.1/trackers/ - Trackers list XML<br>
+	* http://127.0.0.1/admin/eztv - EZTV scrapy settings<br>
+	* http://127.0.0.1/admin/yts - YTS scrapy settings<br>
 
 			
 Api endpoints:

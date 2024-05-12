@@ -1,12 +1,15 @@
 from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-import psycopg2
 import docker
+from ...management.db_connects import ConnectionDb
 
 class ListEztv(LoginRequiredMixin, TemplateView):
     template_name = 'admin/dashboard/eztv.html'
     login_url = 'admin/'
+
+    def __init__(self):
+        self.connection_db = ConnectionDb()
     
     def get_context_data(self, **kwargs):
 
@@ -68,20 +71,14 @@ class ListEztv(LoginRequiredMixin, TemplateView):
 
     def eztv_set_status(self, status_num):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
             cursor.execute("UPDATE eztv_status SET status = %s WHERE id = %s;", (status_num, 1))
-            connection.commit()
+            self.connection_db.connection.commit()
 
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
             return True
         except Exception as e:
             print(f"Error: {e}")
@@ -89,36 +86,24 @@ class ListEztv(LoginRequiredMixin, TemplateView):
 
     def eztv_status(self):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
             cursor.execute("SELECT * FROM eztv_status;")
             existing_data = cursor.fetchone()
 
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
             if existing_data:
                 return existing_data[1]
             else:
-                # set in .env
-                connection = psycopg2.connect(
-                    host="postgres",
-                    database="postgres",
-                    user="app_db_user",
-                    password="supersecretpassword"
-                )
-                cursor = connection.cursor()
+                self.connection_db.connect_pg()
+                cursor = self.connection_db.cursor
                 cursor.execute("INSERT INTO eztv_status (status) VALUES (0) RETURNING status;")
                 new_status = cursor.fetchone()[0]
-                connection.commit()
+                self.connection_db.connection.commit()
                 cursor.close()
-                connection.close()
+                self.connection_db.connection.close()
             
                 return new_status
 
@@ -129,21 +114,15 @@ class ListEztv(LoginRequiredMixin, TemplateView):
 
     def show_settings(self):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
             cursor.execute("SELECT * FROM settings_eztv WHERE name = 'eztv';")
             existing_data = cursor.fetchone()
 
 
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
             return existing_data
         except Exception as e:
             print(f"Error: {e}")
@@ -152,14 +131,8 @@ class ListEztv(LoginRequiredMixin, TemplateView):
     def saved_settings(self, limitPage, offsetPage, urlParse, allowedParse, timer, timer_working):
         result = False
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
             cursor.execute("SELECT * FROM settings_eztv WHERE name = 'eztv';")
             existing_data = cursor.fetchone()
@@ -173,10 +146,10 @@ class ListEztv(LoginRequiredMixin, TemplateView):
                 cursor.execute(insert_query, (str(limitPage), str(offsetPage), str(urlParse), str(allowedParse), str(timer), 'eztv', str(timer_working)))
                 result = True
 
-            connection.commit()
+            self.connection_db.connection.commit()
 
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
             return result
 
         except Exception as e:

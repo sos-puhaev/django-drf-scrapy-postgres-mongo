@@ -4,18 +4,22 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 
-from pymongo import MongoClient
-
+from .manager_scrapy import ConnectionDbScrapy
+from bson import ObjectId
 class YtsPipeline:
-    
-    def process_item(self, item, spider):        
-        magnet = item['magnet_url']
 
-        client = MongoClient("mongo", username="jonnijonni", password="abc234Def", authSource="mongo_db")
-        db = client['mongo_db']
-        collection = db['bls_scrapy']
+    def __init__(self):
+        self.connection_db = ConnectionDbScrapy()
+    
+    def process_item(self, item, spider):
+        magnet = item['magnet_url']
+        object_id = ObjectId() # ObjectId для записей
+
+        self.connection_db.connect_mongo()
+        collection = self.connection_db.collection
         
         ex_record = collection.find_one({'magnet' : magnet})
+        object_id_str = str(object_id)
         if ex_record:
             collection.update_one({'magnet': magnet}, {
                 '$set':{
@@ -38,6 +42,7 @@ class YtsPipeline:
                 })
         else:
             collection.insert_one({
+                    'id_torrent': object_id_str,
                     'title': item['title'],
                     'size': self.verifield_size(item['size_bytes']),
                     'category': 'Movies & Video',

@@ -3,17 +3,17 @@ import re
 from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-import psycopg2
-from pymongo import MongoClient
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-
-
+from ...management.db_connects import ConnectionDb
 
 class AdultFilter(LoginRequiredMixin, TemplateView):
     template_name = 'admin/dashboard/adult_filter.html'
     login_url = 'admin/'
+
+    def __init__(self):
+        self.connection_db = ConnectionDb()
 
     def get_context_data(self, **kwargs):
         
@@ -91,31 +91,19 @@ class AdultFilter(LoginRequiredMixin, TemplateView):
     
     def deleteWordAdultFilter(self, id):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
             delete_query = "DELETE FROM adult_filter WHERE id = %s;"
             cursor.execute(delete_query, (id,))
-            connection.commit()
+            self.connection_db.connection.commit()
         except Exception as e:
             print(f"Error: {e}")
             return False
 
     def insertDynamicFieldAdultFulter(self, dynamic_fields):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
             for item in dynamic_fields:
                 word_value = item.get('word', '')
@@ -124,9 +112,9 @@ class AdultFilter(LoginRequiredMixin, TemplateView):
                 insert_query = f'INSERT INTO adult_filter (word, "check") VALUES (\'{word_value}\', {check_value});'
                 cursor.execute(insert_query)
 
-            connection.commit()
+            self.connection_db.connection.commit()
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
         except Exception as e:
             print(f"Error: {e}")
@@ -135,14 +123,8 @@ class AdultFilter(LoginRequiredMixin, TemplateView):
 
     def updateAdultFilter(self, static_fields):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
             for item in static_fields:
                 id_value = item.get('id', '')
@@ -153,19 +135,17 @@ class AdultFilter(LoginRequiredMixin, TemplateView):
 
                 cursor.execute(update_query)
 
-            connection.commit()
+            self.connection_db.connection.commit()
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
         except Exception as e:
             print(f"Error: {e}")
             return False
 
     def search_and_change(self, word, check):
-        # set in .env
-        client = MongoClient("mongo", username="user", password="password", authSource="mongo_db")
-        db = client['mongo_db']
-        collection = db['bls_scrapy']
+        self.connection_db.connect_mongo()
+        collection = self.connection_db.collection
 
         keywords = [word]
         regex_pattern = '|'.join(map(re.escape, keywords))
@@ -184,20 +164,14 @@ class AdultFilter(LoginRequiredMixin, TemplateView):
 
     def show_adult_world(self):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
             cursor.execute("SELECT * FROM adult_filter")
             show_word = cursor.fetchall()
 
-            connection.commit()
+            self.connection_db.connection.commit()
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
             return show_word
         except Exception as e:

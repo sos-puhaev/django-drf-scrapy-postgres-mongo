@@ -4,13 +4,15 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 
-from pymongo import MongoClient
 import yaml
 from datetime import datetime
+from .manager_scrapy import ConnectionDbScrapy
+from bson import ObjectId
 
 class BlsScrapyPipeline:
 
     def __init__(self):
+        self.connection_db = ConnectionDbScrapy()
         with open('bls_scrapy/conf_spider/tbp.yml', 'r') as file:
             self.categories_data = yaml.safe_load(file)
 
@@ -32,10 +34,10 @@ class BlsScrapyPipeline:
     def process_item(self, item, spider):
 
         magnet = item['magnet']
+        object_id = ObjectId() # ObjectId для записей
 
-        client = MongoClient("mongo", username="jonnijonni", password="abc234Def", authSource="mongo_db")
-        db = client['mongo_db']
-        collection = db['bls_scrapy']
+        self.connection_db.connect_mongo()
+        collection = self.connection_db.collection
 
         adult = False
 
@@ -44,7 +46,7 @@ class BlsScrapyPipeline:
         else:
             adult = False
         
-        
+        object_id_str = str(object_id)
         ex_record = collection.find_one({'magnet' : magnet})
         if ex_record:
             collection.update_one({'magnet': magnet}, {
@@ -66,6 +68,7 @@ class BlsScrapyPipeline:
                 })
         else:
             collection.insert_one({
+                    'id_torrent': object_id_str,
                     'title':item['title'],
                     'size': self.verifield_size(item['size']),
                     'category': self.search_cat(item['category'], item['sub_category']),
@@ -88,7 +91,7 @@ class BlsScrapyPipeline:
         # for document in all_documents:
         #     print(document)
         # print("------------------------------")
-        client.close()
+        self.connection_db.client.close()
 
         return item
 

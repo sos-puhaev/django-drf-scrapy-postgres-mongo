@@ -1,33 +1,39 @@
 from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-import psycopg2
-from pymongo import MongoClient
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
-from bson import ObjectId
-
+from ...management.db_connects import ConnectionDb
 
 class ListComments(LoginRequiredMixin, TemplateView):
     template_name = 'admin/dashboard/comments.html'
     login_url = 'admin/'
 
+    def __init__(self):
+        self.connection_db = ConnectionDb()
+
     def get_context_data(self, **kwargs):
-        # set in .env
-        client = MongoClient("mongo", username="user", password="password", authSource="mongo_db")
-        db = client['mongo_db']
-        collection = db['bls_scrapy']
+        self.connection_db.connect_mongo()
+        collection = self.connection_db.collection
 
         items_per_page = int(self.request.GET.get('items_per_page', 4))
-        page = self.request.GET.get('page', 1)
+        page = int(self.request.GET.get('page', 1))
+
         title_search = self.request.GET.get('q')
         itemId = self.request.GET.get('itemId', None)
         delete_comments = self.request.GET.get('flag', 'w')
         id_comments = self.request.GET.getlist('id_comments[]')
 
+        total_items = collection.count_documents({})
+        total_pages = total_items // items_per_page
+        if total_items % items_per_page != 0:
+            total_pages += 1
+        offset = (page - 1) * items_per_page
+
         torrent_id = self.get_torrent_id()
-        object_ids = [ObjectId(id_str) for id_str in torrent_id]
-        cursor = collection.find({"_id": {"$in": object_ids}})
+        object_ids = [str(id_str) for id_str in torrent_id]
+        
+        cursor = collection.find({"id_torrent": {"$in": object_ids}}).skip(offset).limit(items_per_page)
 
         if delete_comments == 'delete':
             self.delete_comments_method(id_comments)
@@ -53,7 +59,7 @@ class ListComments(LoginRequiredMixin, TemplateView):
         if title_search:
             title_filter = {
                 "title": {'$regex': title_search, '$options': 'i'},
-                "_id": {"$in": object_ids}
+                "id_torrent": {"$in": object_ids}
             }
             torrents_data = collection.find(title_filter)
             torrents_list = list(torrents_data)
@@ -69,6 +75,7 @@ class ListComments(LoginRequiredMixin, TemplateView):
             title_context = super().get_context_data(**kwargs)
             title_context['comment_page'] = torrent_data
             title_context['items_per_page'] = items_per_page
+            title_context['total_pages'] = total_pages
 
             return title_context
 
@@ -85,6 +92,7 @@ class ListComments(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['comment_page'] = torrent_data
         context['items_per_page'] = items_per_page
+        context['total_pages'] = total_pages
 
         return context
     
@@ -97,13 +105,13 @@ class ListComments(LoginRequiredMixin, TemplateView):
                 return JsonResponse(response_data)
 
             serialized_data = [
-                {'_id': str(ObjectId(item['_id'])), 'title': item['title'], 'adult': item['adult']}
+                {'id_torrent': str(item['id_torrent']), 'title': item['title'], 'adult': item['adult']}
                 for item in context['comment_page']
             ]
 
             response_data = {
                 'comment_page': serialized_data,
-                'total_pages': context['comment_page'].paginator.num_pages,
+                'total_pages': context['total_pages'],
                 'items_per_page': context['items_per_page'],
             }
             return JsonResponse(response_data)
@@ -112,22 +120,15 @@ class ListComments(LoginRequiredMixin, TemplateView):
 
     def delete_comments_method(self, id_comments):
         id_comments = [int(id_comment) for id_comment in id_comments]
+        print(id_comments)
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
             delete_query = f"DELETE FROM bls_scrapy WHERE id = ANY(ARRAY[{id_comments}]);"
-
+            
             cursor.execute(delete_query)
-            connection.commit()
-
+            self.connection_db.connection.commit()          
             cursor.close()
-            connection.close()
 
         except Exception as e:
             print(f"Error: {e}")
@@ -148,23 +149,16 @@ class ListComments(LoginRequiredMixin, TemplateView):
 
     def get_comment_show(self, id):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
-            cursor = connection.cursor()
             cursor.execute("SELECT id, name, email, data_comment, comments, id_torrent FROM bls_scrapy WHERE id_torrent = %s ORDER BY data_comment;", (id,))
 
             columns = [desc[0] for desc in cursor.description]
             comment = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
             cursor.close()
-            connection.close()
-
+            self.connection_db.cursor.close()
             return comment
 
         except Exception as e:
@@ -173,20 +167,15 @@ class ListComments(LoginRequiredMixin, TemplateView):
 
     def get_torrent_id(self):
         try:
-            # set in .env
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
 
-            cursor = connection.cursor()
             cursor.execute("SELECT id_torrent FROM bls_scrapy;")
+            self.connection_db.connection.commit() 
 
             torrent_id = [row[0] for row in cursor.fetchall()]
             cursor.close()
-            connection.close()
+            self.connection_db.cursor.close()
 
             return torrent_id
 

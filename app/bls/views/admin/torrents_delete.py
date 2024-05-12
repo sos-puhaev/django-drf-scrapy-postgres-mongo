@@ -1,23 +1,23 @@
 from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from pymongo import MongoClient
 from django.http import JsonResponse
 from datetime import datetime
-
+from ...management.db_connects import ConnectionDb
 
 class TorrentsDelete(LoginRequiredMixin, TemplateView):
     template_name = 'admin/dashboard/torrents_delete.html'
     login_url = 'admin/'
 
+    def __init__(self):
+        self.connection_db = ConnectionDb()
 
     def post(self, request, *args, **kwargs):
         form_1 = self.request.POST.get('form1')
         form_2 = self.request.POST.get('form2')
         
-        client = MongoClient("mongo", username="jonnijonni", password="abc234Def", authSource="mongo_db")
-        db = client['mongo_db']
-        collection = db['bls_scrapy']
+        self.connection_db.connect_mongo()
+        collection = self.connection_db.collection
         
         if form_1 == 'form1':
             links_to_delete = self.request.POST.getlist('links[]')

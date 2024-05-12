@@ -3,8 +3,7 @@ from scrapy import Selector as S
 from scrapy.http import Request as R
 import re
 from bls_scrapy.items import BlsScrapyItem
-import psycopg2
-
+from ..manager_scrapy import ConnectionDbScrapy
 
 class ThepirateBaySpider(scrapy.Spider):
     name = "thepirate_bay"
@@ -16,6 +15,7 @@ class ThepirateBaySpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(ThepirateBaySpider, self).__init__(*args, **kwargs)
+        self.connection_db = ConnectionDbScrapy()
         self.start_page = self.settings_spider()['start_page']
         self.max_page = self.settings_spider()['end_page']
 
@@ -37,18 +37,13 @@ class ThepirateBaySpider(scrapy.Spider):
 
     def settings_spider(self):
         try:
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
             cursor.execute("SELECT start_page, end_page, url_parse, start_url FROM settings_tpb;")
             existing_data = cursor.fetchone()
 
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
             if existing_data:
                 start_page, end_page, url_parse, start_url = existing_data

@@ -2,22 +2,18 @@ import re
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from pymongo import MongoClient
 from rest_framework.permissions import IsAuthenticated
-import psycopg2
+from ..management.db_connects import ConnectionDb
 
 class MongoDataSerialListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def __init__(self):
+        self.connection_db = ConnectionDb()
+    
     def show_number_comment(self, id):
-        # set in .env
-        connection = psycopg2.connect(
-            host = "postgres",
-            database = "postgres",
-            user = "app_db_user",
-            password = "supersecretpassword"
-        )
-        cursor = connection.cursor()
+        self.connection_db.connect_pg()
+        cursor = self.connection_db.cursor
         try:
             cursor.execute("SELECT COUNT(comments) FROM bls_scrapy WHERE id_torrent = %s", (id,))
             count = cursor.fetchone()[0]
@@ -26,7 +22,7 @@ class MongoDataSerialListCreateView(APIView):
             return 0
         finally:
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
     def get(self, request):
         try:
@@ -36,10 +32,9 @@ class MongoDataSerialListCreateView(APIView):
             season = request.GET.get('season', None)
             resolution = request.GET.get('resolution', None)
 
-            # set in .env
-            client = MongoClient("mongo", username="user", password="password", authSource="mongo_db")
-            db = client['mongo_db']
-            collection = db['bls_scrapy']
+
+            self.connection_db.connect_mongo()
+            collection = self.connection_db.collection
 
             filter_condition = {'category': 'Series'}
 
@@ -74,7 +69,7 @@ class MongoDataSerialListCreateView(APIView):
             episode_number = torrent['episode']
             # Создаем словарь для хранения информации о серии
             episode_info = {
-                '_id': str(torrent['_id']),
+                '_id': str(torrent['id_torrent']),
                 'title': torrent['title'],
                 'season': season_number,
                 'episode': episode_number,
@@ -92,7 +87,7 @@ class MongoDataSerialListCreateView(APIView):
                 'adult': torrent['adult'],
                 'source': torrent['source'],
                 'magnet': torrent['magnet'],
-                'num_comment': self.show_number_comment(str(torrent['_id'])),
+                'num_comment': self.show_number_comment(str(torrent['id_torrent'])),
                 'filename': torrent.get('filename', None),
             }
             found_season = False

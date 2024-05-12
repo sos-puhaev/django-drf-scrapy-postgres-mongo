@@ -2,24 +2,20 @@ import time
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from pymongo import MongoClient
 from rest_framework.permissions import IsAuthenticated
-import psycopg2
 import pymongo
 import re
+from ..management.db_connects import ConnectionDb
 
 class MongoDataListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def __init__(self):
+        self.connection_db = ConnectionDb()
+    
     def show_number_comment(self, id):
-        # set in .env
-        connection = psycopg2.connect(
-            host = "postgres",
-            database = "postgres",
-            user = "app_db_user",
-            password = "supersecretpassword"
-        )
-        cursor = connection.cursor()
+        self.connection_db.connect_pg()
+        cursor = self.connection_db.cursor
         try:
             cursor.execute("SELECT COUNT(comments) FROM bls_scrapy WHERE id_torrent = %s", (id,))
             count = cursor.fetchone()[0]
@@ -28,7 +24,7 @@ class MongoDataListCreateView(APIView):
             return 0
         finally:
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
     def get(self, request):
         try:
@@ -45,10 +41,9 @@ class MongoDataListCreateView(APIView):
             spacing = request.GET.get('spacing', None)
             imdb_id = request.GET.get('imdb_id', None)
 
-            # set in .env
-            client = MongoClient("mongo", username="user", password="password", authSource="mongo_db")
-            db = client['mongo_db']
-            collection = db['bls_scrapy']
+
+            self.connection_db.connect_mongo()
+            collection = self.connection_db.collection
 
             filter_conditions = {}
 
@@ -120,7 +115,7 @@ class MongoDataListCreateView(APIView):
 
             for document in filter_document:
                 serialized_data = {
-                    '_id': str(document['_id']),
+                    '_id': str(document['id_torrent']),
                     'title': document['title'],
                     'size': int(document['size']),
                     'category': document['category'],
@@ -128,7 +123,7 @@ class MongoDataListCreateView(APIView):
                     'link': document['url'],
                     'peers': document['peers'],
                     'seeds': document['seeds'],
-                    'num_comment': self.show_number_comment(str(document['_id'])),
+                    'num_comment': self.show_number_comment(str(document['id_torrent'])),
                     'is_verified': document['is_verified'],
                     'date': document['date'],
                     'date_sort': document['date_sort'],

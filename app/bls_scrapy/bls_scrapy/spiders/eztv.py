@@ -3,7 +3,7 @@ import scrapy
 from scrapy.http import Request as R
 import json
 from bls_scrapy.items import BlsScrapyItemEztv
-import psycopg2
+from ..manager_scrapy import ConnectionDbScrapy
 
 class EztvSpider(scrapy.Spider):
     name = 'eztv'
@@ -16,6 +16,7 @@ class EztvSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(EztvSpider, self).__init__(*args, **kwargs)
+        self.connection_db = ConnectionDbScrapy()
         self.limit = int(self.settings_spider()['limit'])
         self.offset = int(self.settings_spider()['offset'])
 
@@ -27,18 +28,13 @@ class EztvSpider(scrapy.Spider):
     
     def settings_spider(self):
         try:
-            connection = psycopg2.connect(
-                host="postgres",
-                database="postgres",
-                user="app_db_user",
-                password="supersecretpassword"
-            )
-            cursor = connection.cursor()
+            self.connection_db.connect_pg()
+            cursor = self.connection_db.cursor
             cursor.execute("SELECT \"limit\", \"offset\", allowed_domains, url_parse FROM settings_eztv;")
             existing_data = cursor.fetchone()
 
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
             if existing_data:
                 limit, offset, allowed_domain, urlParse = existing_data

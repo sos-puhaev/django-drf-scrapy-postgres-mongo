@@ -2,22 +2,18 @@ from bson import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from pymongo import MongoClient
 from rest_framework.permissions import IsAuthenticated
-import psycopg2
+from ..management.db_connects import ConnectionDb
 
 class ShareList(APIView):
     permission_classes = [IsAuthenticated]
 
+    def __init__(self):
+        self.connection_db = ConnectionDb()
+
     def show_number_comment(self, id):
-        # set in .env
-        connection = psycopg2.connect(
-            host = "postgres",
-            database = "postgres",
-            user = "app_db_user",
-            password = "supersecretpassword"
-        )
-        cursor = connection.cursor()
+        self.connection_db.connect_pg()
+        cursor = self.connection_db.cursor
         try:
             cursor.execute("SELECT COUNT(comments) FROM bls_scrapy WHERE id_torrent = %s", (id,))
             count = cursor.fetchone()[0]
@@ -26,22 +22,20 @@ class ShareList(APIView):
             return 0
         finally:
             cursor.close()
-            connection.close()
+            self.connection_db.connection.close()
 
     def get(self, request):
         try:
             limit = int(request.GET.get('limit', 15))
             offset = int(request.GET.get('offset', 0))
             torrent_id = request.GET.get('torrent_id', None)
-            
-            # set in .env
-            client = MongoClient("mongo", username="user", password="password", authSource="mongo_db")
-            db = client['mongo_db']
-            collection = db['bls_scrapy']
+
+            self.connection_db.connect_mongo()
+            collection = self.connection_db.collection
 
             filter_conditions = {}
             if torrent_id:
-                filter_conditions['_id'] = ObjectId(torrent_id)
+                filter_conditions['id_torrent'] = torrent_id
             else:
                 return Response({"error": "torrent_id is not specified."})
 
@@ -50,7 +44,7 @@ class ShareList(APIView):
 
             for document in filter_document:
                 serialized_data = {
-                    '_id': str(document['_id']),
+                    '_id': str(document['id_torrent']),
                     'title': document['title'],
                     'size': int(document['size']),
                     'category': document['category'],
@@ -58,7 +52,7 @@ class ShareList(APIView):
                     'link': document['url'],
                     'peers': document['peers'],
                     'seeds': document['seeds'],
-                    'num_comment': self.show_number_comment(str(document['_id'])),
+                    'num_comment': self.show_number_comment(str(document['id_torrent'])),
                     'is_verified': document['is_verified'],
                     'date': document['date'],
                     'date_sort': document['date_sort'],

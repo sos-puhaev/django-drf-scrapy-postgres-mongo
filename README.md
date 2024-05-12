@@ -38,7 +38,7 @@ Scrapy settings:
 			+ Click save button. Refresh the page to make sure the data has been recorded. (Repeat if data is not recorded)
 			+ When you click on start, the parser will start.
 
-Endpoints:
+Endpoints:<br>
 	* http://127.0.0.1/admindjango/ - Superuser admin panel.<br>
 	* http://127.0.0.1/admin/ - Admin control panel BLS.<br>
 	* http://127.0.0.1/admin/list - List torrents<br>
